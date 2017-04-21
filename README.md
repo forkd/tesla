@@ -1,5 +1,5 @@
 # Tesla
-Opens, decrypts, and manages saved email messages.  Retrives the message inside a file exported by Outlook (file.msg).
+Opens, decrypts, and manages saved email messages.  The idea here is: given an .msg (Outlook) file with a PGP encrypted part, retrieve that part, decrypt, and store the message somewhere.
 
 Note: this project assumes only one encrypted block in the message.  If there is more than one encrypted block, than it will not work. 
 

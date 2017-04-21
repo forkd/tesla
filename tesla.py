@@ -23,12 +23,6 @@ import sys
 import olefile as of
 
 
-def win_unicode(string):
-    if string is None:
-        return None
-    return str(string, 'utf_16_le')
-
-
 class Message(of.OleFileIO):
     '''
     Parses a .msg file allowing to retrieve the PGP message inside it.
@@ -60,12 +54,12 @@ class Message(of.OleFileIO):
 
         '''
 
+        # Join filename with slashes to make it easier to append the type
         if isinstance(f, list):
-            # Join with slashes to make it easier to append the type
             f = "/".join(f)
 
         ascii_version = self._get_stream(f + '001E')
-        unicode_version = win_unicode(self._get_stream(f + '001F'))
+        unicode_version = str(self._get_stream(f + '001F'), 'utf_16_le')
 
         if ascii_version is None:
             return unicode_version

@@ -1,31 +1,16 @@
 # Tesla
-Opens, decrypts, and manages saved email messages.  The idea here is: given an .msg (Outlook) file with a PGP encrypted part, retrieve that part, decrypt, and store the message somewhere.
+The main target of this project is to parse a honeypot (OpenBSD) access data to a database.  Then it can be used to retrieve information of possible attacks.
 
-Note: this project assumes only one encrypted block in the message.  If there is more than one encrypted block, than it will not work. 
+Warning: under development!
 
 Environment preparation:
 
 ```
-$ pip3 install virtualenv
+$ git clone https://github.com/forkd/tesla
 $ cd tesla
 $ virtualenv tesla
 $ source tesla/bin/activate
-$ pip3 install olefile
-```
-
-Usage:
-
-```
-$ chmod +x tesla.py
-$ tesla.py file.msg
-```
-
-or
-
-```python
->>> import tesla
->>> msg = tesla.Message('file.msg')
->>> print(msg.get_pgp_msg())
+$ pip3 install pyshark geoip2
 ```
 
 

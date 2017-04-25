@@ -10,6 +10,15 @@
 
 '''
 Retrives the message inside a file exported by Outlook (file.msg).
+
+Environment preparation:
+
+$ pip3 install virtualenv
+$ cd tesla
+$ virtualenv tesla
+$ source tesla/bin/activate
+$ pip3 install olefile
+
 Based on:
 https://github.com/mattgwwalker/msg-extractor (ExtractMsg.py)
 

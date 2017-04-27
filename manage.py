@@ -1,3 +1,18 @@
+#!/usr/bin/env python3
+#manage.py
+#
+# Copyright 2017 José Lopes de Oliveira Jr.
+#
+# Use of this source code is governed by a MIT-like
+# license that can be found in the LICENSE file.
+##
+
+
+'''Starts Tesla's web server and .'''
+
+__author__ = 'José Lopes de Oliveira Jr.'
+
+
 from flask_script import Manager, Command
 
 from app import app
@@ -14,7 +29,9 @@ def initdb():
 @manager.command
 def upd8db():
     from app.pflog import PFLogger
-    PFLogger('pflog.0', 'geolite.mmdb').parser()  #TODO test if args are valid
+    #TODO this should be parameters to make this
+    # process scriptable.
+    PFLogger('pflog.0', 'geolite.mmdb').parser()
 
 
 if __name__ == '__main__':

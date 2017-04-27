@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pflog.py
+#pflog.py
 #
 # Copyright 2017 José Lopes de Oliveira Jr.
 #

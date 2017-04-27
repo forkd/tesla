@@ -8,9 +8,8 @@
 ##
 
 
-mkdir geolite
 wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O geolite.tgz
-tar -xzvf geolite.tgz -C geolite
-mv geolite/GeoLite*/*.mmdb geolite/geolite.mmdb
-rm -rf geolite.tgz geolite/Geo*
+tar -xzvf geolite.tgz
+mv GeoLite*/*.mmdb ../geolite.mmdb
+rm -rf geolite.tgz GeoLite*
 

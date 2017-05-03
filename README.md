@@ -4,6 +4,24 @@ Tesla aims to parse a OpenBSD access data (`pflog`) to a database, and create JS
 
 Warning: under development!
 
+
+## Infrastructure
+
+Tesla was developed to work in this architecture:
+
+```
+  +-------+  SSH   +---------+
+  | Tesla |------->| OpenBSD |
+  +-------+        +---------+
+      ^    \____________  
+      |                 | HTTP
+      | JSON/SQL        V
++-----------+      +^^^^^^^^^+
+| Analytics |      ( GeoLite ) 
++-----------+      +vvvvvvvvv+
+```
+
+
 ## Environment Preparation
 
 All the steps described here were based on Fedora 25.  If you aren't running this system, things could be a bit different.  Start with:
@@ -13,9 +31,10 @@ $ git clone https://github.com/forkd/tesla
 $ cd tesla
 $ virtualenv tesla
 $ source tesla/bin/activate
-$ pip3 install pyshark geoip2 psycopg2 sqlalchemy flask flask-script flask-sqlalchemy
-$ cd tesla/app && bash geoip_upd8.sh && cd -
+$ pip3 install -r requirements.txt --upgrade
 ```
+
+From this moment, it'll be considered that all commands will be executed inside this virtual environment. 
 
 ### Database Setup
 
@@ -79,7 +98,14 @@ $ python manage.py runserver
 If everything went right, open a web browser, and access `localhost:5000/packets`.  The data you just imported to database will be shown in JSON format.
 
 
+# About
+
+Tesla was written by José Lopes to be used at Cemig. 
+
+The project that resulted in that OpenBSD machine was named Tesla, in honor of Nikola Tesla (1856-1943).  When I started this repository, I decided to use that name.
+
+
 # License
 
-This project is licensed under a MIT license.
+This project is licensed under a MIT license; read `LICENSE` file for more information.
 

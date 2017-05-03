@@ -22,6 +22,16 @@ $ pip3 install olefile
 Based on:
 https://github.com/mattgwwalker/msg-extractor (ExtractMsg.py)
 
+NOTE
+Initially Tesla would parse email digests with access data,
+but then it changed to parsing the own network access logs.
+So, this file is not currently used by the project, but is
+still kept for emotional reasons.  <3
+
+To use it, you *must* install the olefile module:
+
+$ pip3 install olefile
+
 '''
 
 __author__ = 'José Lopes de Oliveira Jr.'

@@ -16,13 +16,15 @@ __author__ = 'José Lopes de Oliveira Jr.'
 import sys
 import re
 import tarfile
-from os import remove, system
+from os import remove, system, path, makedirs
 from urllib.request import urlretrieve
 from glob import glob
 from shutil import move, rmtree
 
 
 datapath = 'app/data'
+if not path.isdir(datapath):
+    makedirs(datapath)
 
 
 def geolite():
@@ -50,7 +52,7 @@ def pflog():
     user = 'username'
     server = 'server-addr'
     remote = 'remote/file/path'
-    system('scp -i {0} {1}@{2}:{3} {4}'.format(cert, user, server, 
+    system('scp -i {0} {1}@{2}:{3} {4}/pflog'.format(cert, user, server, 
         remote, datapath))
 
 
@@ -59,6 +61,9 @@ if __name__ == '__main__':
         if (sys.argv[1] == 'geolite'):
             geolite()
         elif (sys.argv[1] == 'pflog'):
+            pflog()
+        elif (sys.argv[1] == 'all'):
+            geolite()
             pflog()
         else:
             print('Invalid parameter.')

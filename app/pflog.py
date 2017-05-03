@@ -29,8 +29,8 @@ class PFLogger:
     Opens and parses pflog files adding geographical information.
 
     Args:
-        f (string): pflog file name
-        g (string): GeoLite database path
+        f (string): pflog file name --default: app/data/pflog
+        g (string): GeoLite database path --default: app/data/geolite.mmdb
 
     Writes all data into a database defined in app.models.db.
 
@@ -41,6 +41,7 @@ class PFLogger:
         self.geo = geoip2.database.Reader(g)
 
     def parser(self):
+        counter = 0
         for c in self.capture:
             p = [c.captured_length, c['ip'].src, 
                 self.geo.country(c['ip'].src).country.iso_code,
@@ -48,21 +49,25 @@ class PFLogger:
                 self.geo.country(c['ip'].dst).country.iso_code]
 
             try:
-                p += [c.transport_layer.lower(), 
-                    c[c.transport_layer.lower()].srcport, 
-                    c[c.transport_layer.lower()].dstport]
+                t = c.transport_layer.lower()
+                p += [t, c[t].srcport, c[t].dstport]
             except AttributeError:
                 p += [None, None, None]
             
-            # write to database
             db.session.add(Packet(p[0], p[1], p[2], p[3], 
                 p[4], p[5], p[6], p[7]))
-            db.session.commit()
+
+            # the less we commit, the better we perform
+            counter += 1
+            if counter == 20000:
+                db.session.commit()
+                counter = 0
+        db.session.commit()  # last items guaranteed
 
 
 if __name__ == "__main__":
     # TODO: when running as program this script 
     # should parse the pflog file and write it 
     # into the database.
-    PFLogger('pflog.0', 'geolite.mmdb').parser()
+    PFLogger('app/data/pflog', 'app/data/geolite.mmdb').parser()
 

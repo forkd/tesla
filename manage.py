@@ -31,7 +31,17 @@ def upd8db():
     from app.pflog import PFLogger
     #TODO this should be parameters to make this
     # process scriptable.
-    PFLogger('app/data/pflog.0', 'app/data/geolite.mmdb').parser()
+    PFLogger('app/data/pflog', 'app/data/geolite.mmdb').parser()
+
+@manager.command
+def geolite():
+    from app.getdata import geolite
+    geolite()
+
+@manager.command
+def pflog():
+    from app.getdata import pflog
+    pflog()
 
 
 if __name__ == '__main__':

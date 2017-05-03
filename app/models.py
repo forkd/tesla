@@ -20,7 +20,7 @@ from app.database import db
 
 class Packet(db.Model):
     __tablename__ = 'Packets'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     date = db.Column(db.DateTime, default=datetime.utcnow())
     length = db.Column(db.Integer)
     ip_src = db.Column(db.String(128))

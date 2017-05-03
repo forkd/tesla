@@ -22,6 +22,7 @@ from app.models import db, Packet
 
 
 def error_response(status):
+    '''Auxiliary function to return JSON errors.'''
     if status == 404:
         return make_response(jsonify({'status': 'not found'}), status)
     else:
@@ -29,6 +30,7 @@ def error_response(status):
             status)}), status)
 
 def packet_response(status, d, l, ips, ipsg, ipd, ipdg, tp, tsp, tdp):
+    '''Auxiliary function used by get_packets().'''
     if status == 200:
         return {'date':d, 'length':l, 'ip_src':ips, 'ip_src_geo':ipsg, 
             'ip_dst':ipd, 'ip_dst_geo':ipdg, 'transport_proto':tp,
@@ -37,6 +39,7 @@ def packet_response(status, d, l, ips, ipsg, ipd, ipdg, tp, tsp, tdp):
         return error_response(status)
 
 def get_packets(d):
+    '''Main function to retrieve packets data.'''
     end = db.session.query(db.func.max(Packet.date)).scalar()
     begin = end - timedelta(days=d)
     packets = list()

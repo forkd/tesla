@@ -20,6 +20,7 @@ __author__ = 'José Lopes de Oliveira Jr.'
 
 import pyshark
 import geoip2.database
+from geoip2.errors import AddressNotFoundError
 
 from app.models import db, Packet
 
@@ -43,10 +44,14 @@ class PFLogger:
     def parser(self):
         counter = 0
         for c in self.capture:
-            p = [c.captured_length, c['ip'].src, 
-                self.geo.country(c['ip'].src).country.iso_code,
-                c['ip'].dst,
-                self.geo.country(c['ip'].dst).country.iso_code]
+            try:
+                p = [c.captured_length, c['ip'].src, 
+                    self.geo.country(c['ip'].src).country.iso_code,
+                    c['ip'].dst,
+                    self.geo.country(c['ip'].dst).country.iso_code]
+            except AddressNotFoundError:
+                p = [c.captured_length, c['ip'].src, None,
+                    c['ip'].dst, None]
 
             try:
                 t = c.transport_layer.lower()
@@ -57,7 +62,11 @@ class PFLogger:
             db.session.add(Packet(p[0], p[1], p[2], p[3], 
                 p[4], p[5], p[6], p[7]))
 
-            # the less we commit, the better we perform
+            # Less commits, better performance.
+            # In fact, it's not quite right, so
+            # with 20000 disk usage was diminished 
+            # and CPU improved, but there were no 
+            # expressive gains above this value.
             counter += 1
             if counter == 20000:
                 db.session.commit()

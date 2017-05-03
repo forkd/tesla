@@ -98,6 +98,15 @@ $ python manage.py runserver
 If everything went right, open a web browser, and access `localhost:5000/packets`.  The data you just imported to database will be shown in JSON format.
 
 
+# Database
+
+The resulting database size depends on the number of data transmitted and received by OpenBSD machine, of course.  In a practical way, I noticed that a 145 MB pflog file resulted in ~ 795 K rows in the base.
+
+If a local IPv4 address was logged, then GeoLite won't be able to figure out its country, so it'll be recorded as None.  The same happens with IP addresses not tracked by GeoLite.
+
+Tesla was not tested with IPv6.
+
+
 # About
 
 Tesla was written by José Lopes to be used at Cemig. 

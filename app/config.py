@@ -29,6 +29,15 @@ class Production:
         /{4}'.format(DBUSER, DBPASS, DBHOST, DBPORT, DBNAME)
     SECRET_KEY = 'Q.\=wNpSa=J}1>9bH*VPyYgWf1[<R[%*0NJ-?jJ"H*g"|S=aP]]'
 
+    BASE_DATA_PATH = 'app/data'
+    PFLOG_FILENAME = 'pflog'
+    GEOLITE_FILENAME = 'geolite.mmdb'
+
+    BSD_CERT_PATH = 'ssh-private-key-path'
+    BSD_USERNAME = 'username'
+    BSD_ADDRESS = 'ip-addr-or-hostname'
+    BSD_PFLOG_PATH = 'remote/pflog/path'
+
 class Development(Production):
     DEBUG = True
 
@@ -41,4 +50,6 @@ config = {
 
 def configure_app(app):
     app.config.from_object(config[os.getenv('TESLA_MODE', 'production')])
+
+
 

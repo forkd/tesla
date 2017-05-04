@@ -8,7 +8,7 @@
 ##
 
 
-'''Starts Tesla's web server and .'''
+'''Management routines for Tesla.'''
 
 __author__ = 'José Lopes de Oliveira Jr.'
 
@@ -22,26 +22,23 @@ manager = Manager(app)
 
 
 @manager.command
-def initdb():
-    from app.models import db
-    db.create_all()
-
-@manager.command
 def upd8db():
     from app.pflog import PFLogger
-    #TODO this should be parameters to make this
-    # process scriptable.
+    from app.getdata import pflog
+    #TODO should have an exception handling here
+    pflog()
+    #TODO put these data into app/config.py
     PFLogger('app/data/pflog', 'app/data/geolite.mmdb').parser()
 
 @manager.command
-def geolite():
+def upd8geo():
     from app.getdata import geolite
     geolite()
 
 @manager.command
-def pflog():
-    from app.getdata import pflog
-    pflog()
+def initdb():
+    from app.models import db
+    db.create_all()
 
 
 if __name__ == '__main__':

@@ -21,15 +21,18 @@ from urllib.request import urlretrieve
 from glob import glob
 from shutil import move, rmtree
 
+from app.config import Production
 
-datapath = 'app/data'
-if not path.isdir(datapath):
-    makedirs(datapath)
+
+if not path.isdir(Production().BASE_DATA_PATH):
+    makedirs(Production().BASE_DATA_PATH)
 
 
 def geolite():
     url = 'http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz'
-    filepath = '{}/geolite.tgz'.format(datapath)
+    dp = Production().BASE_DATA_PATH
+    gf = Production().GEOLITE_FILENAME
+    filepath = '{0}/{1}.tgz'.format(dp, gf)
     urlretrieve(url, filepath)  # tarfile only works with files
     compacted = tarfile.open(filepath, mode='r:gz')
     mmdbfile = None
@@ -38,36 +41,22 @@ def geolite():
     for f in compacted.getnames():
         if regex.match(f):
             mmdbfile = compacted.getmember(f)
-    compacted.extract(mmdbfile, datapath)
+    compacted.extract(mmdbfile, dp, set_attrs=False)
     
-    # cleaning the house
-    for f in glob(r'{}/GeoLite2*/GeoLite2*.mmdb'.format(datapath)):
-        move(f, '{}/geolite.mmdb'.format(datapath))
-    for d in glob(r'{}/GeoLite2*'.format(datapath)):
+    # cleaning up the house
+    for f in glob(r'{}/GeoLite2*/GeoLite2*.mmdb'.format(dp)):
+        move(f, '{0}/{1}'.format(dp, gf))
+    for d in glob(r'{}/GeoLite2*'.format(dp)):
         rmtree(d)
     remove(filepath)
 
 def pflog():
-    cert = 'ssh-private-key-path'
-    user = 'username'
-    server = 'server-addr'
-    remote = 'remote/file/path'
-    system('scp -i {0} {1}@{2}:{3} {4}/pflog'.format(cert, user, server, 
-        remote, datapath))
-
-
-if __name__ == '__main__':
+    p = Production()
     try:
-        if (sys.argv[1] == 'geolite'):
-            geolite()
-        elif (sys.argv[1] == 'pflog'):
-            pflog()
-        elif (sys.argv[1] == 'all'):
-            geolite()
-            pflog()
-        else:
-            print('Invalid parameter.')
-            exit(1)
-    except IndexError:
-        print('Parameter: geolite or pflog.')
+        remove('{0}/{1}'.format(p.BASE_DATA_PATH, p.PFLOG_FILENAME))
+    except FileNotFoundError:
+        pass
+    system('scp -i {0} {1}@{2}:{3} {4}/{5}'.format(p.BSD_CERT_PATH, 
+        p.BSD_USERNAME, p.BSD_ADDRESS, p.BSD_PFLOG_PATH, 
+        p.BASE_DATA_PATH, p.PFLOG_FILENAME))
 

@@ -8,12 +8,7 @@
 ##
 
 
-'''
-Parses a pflog file and write it into a database.  This
-script can be used as a module or as an independent
-program.
-
-'''
+'''Parses a pflog file and write it into a database.'''
 
 __author__ = 'José Lopes de Oliveira Jr.'
 
@@ -72,11 +67,4 @@ class PFLogger:
                 db.session.commit()
                 counter = 0
         db.session.commit()  # last items guaranteed
-
-
-if __name__ == "__main__":
-    # TODO: when running as program this script 
-    # should parse the pflog file and write it 
-    # into the database.
-    PFLogger('app/data/pflog', 'app/data/geolite.mmdb').parser()
 

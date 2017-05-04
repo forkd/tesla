@@ -10,15 +10,15 @@ Warning: under development!
 Tesla was developed to work in this architecture:
 
 ```
-  +-------+  SSH   +---------+
-  | Tesla |------->| OpenBSD |
-  +-------+        +---------+
-      ^    \____________  
-      |                 | HTTP
-      | JSON/SQL        V
-+-----------+      +^^^^^^^^^+
-| Analytics |      ( GeoLite ) 
-+-----------+      +vvvvvvvvv+
+      +-------+    SSH     +---------+
+      | Tesla |----------->| OpenBSD |
+      +-------+            +---------+
+          ^    \_______________  
+          |                    | HTTP
+          | JSON/SQL           V
+    +-----------+          +^^^^^^^^^+
+    | Analytics |          ( GeoLite ) 
+    +-----------+          +vvvvvvvvv+
 ```
 
 
@@ -50,6 +50,8 @@ $ sudo -u postgres psql
 > \q
 ```
 
+Change `DBPASS` in `app/config.py` according to the password previously defined.   You **really** should change `SECRET_KEY` variable there too.  At this point you should setup those `BSD_*` variables in `app/config.py`, because they'll be necessary to get pflog file ahead.
+
 Edit `/var/lib/pgsql/data/pg_hba.conf` to use md5 from local IPv4 connections.  Remember to reload Postgre's service.
 
 Now, prepare the database:
@@ -63,7 +65,7 @@ $ python manage.py initdb
 
 ### First Database Import
 
-Set up the pflog retrieval routine.  In my case, they are located in a server accessed by SSH.  So, I created a passwordless SSH key pair, put the public part on the server and the kept the private part in the application machine.
+Set up the pflog retrieval routine.  In my case, they are located in a server accessed by SSH.  So, I created a passwordless SSH key pair, put the public part on the server and kept the private part in the application machine.
 
 ```
 $ ssh-keygen -t ed25519 -C 'my@email.com'  # use no password
@@ -74,18 +76,13 @@ $ ssh user@server
 $ scp -i generated_key_id_25519 /var/log/pf/pflog .  # test: must download this file without asking for password
 ```
 
-Default path for pflog and GeoLite files is `tesla/app/data`.  Setup `pflog()` in `getdata.py` with your server's data and download the base files --`geolite()` will require internet access and `pflog()` will require access to your server:
+Default path for pflog and GeoLite files is `tesla/app/data`.  Setup `pflog()` in `getdata.py` with your server's data and download the base files --`geolite()` will require internet access and `upd8db()` will require access to your server to download pflog file, it also may take some minutes to import that file data to your database:
 
 ```
-$ python manage.py geolite
-$ python manage.py pflog
-```
-
-Import those files to Tesla's database --it may take some minutes according to your pflog file:
-
-```
+$ python manage.py upd8geo
 $ python manage.py upd8db
 ```
+
 
 ### Testing
 
@@ -109,9 +106,9 @@ Tesla was not tested with IPv6.
 
 # About
 
-Tesla was written by José Lopes to be used at Cemig. 
+Tesla was written by José Lopes to be used at [Cemig](http://cemig.com.br). 
 
-The project that resulted in that OpenBSD machine was named Tesla, in honor of Nikola Tesla (1856-1943).  When I started this repository, I decided to use that name.
+The project that resulted in that OpenBSD machine was named Tesla, in honor of Nikola Tesla (1856-1943).  When I started up this repository, I decided to use that name.
 
 
 # License

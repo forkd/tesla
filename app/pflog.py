@@ -13,6 +13,8 @@
 __author__ = 'José Lopes de Oliveira Jr.'
 
 
+from datetime import datetime
+
 import pyshark
 import geoip2.database
 from geoip2.errors import AddressNotFoundError
@@ -32,9 +34,10 @@ class PFLogger:
 
     '''
 
-    def __init__(self, f, g):
+    def __init__(self, f, g, d=datetime.utcnow()):
         self.capture = pyshark.FileCapture(f)
         self.geo = geoip2.database.Reader(g)
+        self.date = d
 
     def parser(self):
         counter = 0
@@ -54,7 +57,7 @@ class PFLogger:
             except AttributeError:
                 p += [None, None, None]
             
-            db.session.add(Packet(p[0], p[1], p[2], p[3], 
+            db.session.add(Packet(self.date, p[0], p[1], p[2], p[3], 
                 p[4], p[5], p[6], p[7]))
 
             # Less commits, better performance.

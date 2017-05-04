@@ -31,7 +31,8 @@ class Packet(db.Model):
     transport_sport = db.Column(db.Integer)
     transport_dport = db.Column(db.Integer)
 
-    def __init__(self, l, ips, ipsg, ipd, ipdg, tp, tsp, tdp):
+    def __init__(self, d, l, ips, ipsg, ipd, ipdg, tp, tsp, tdp):
+        self.date = d
         self.length = l
         self.ip_src = ips
         self.ip_src_geo = ipsg

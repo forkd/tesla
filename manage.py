@@ -16,6 +16,7 @@ __author__ = 'José Lopes de Oliveira Jr.'
 from flask_script import Manager, Command
 
 from app import app
+from app.config import Production
 
 
 manager = Manager(app)
@@ -25,15 +26,19 @@ manager = Manager(app)
 def upd8db():
     from app.pflog import PFLogger
     from app.getdata import pflog
+    p = Production()
     #TODO should have an exception handling here
-    pflog()
-    #TODO put these data into app/config.py
-    PFLogger('app/data/pflog', 'app/data/geolite.mmdb').parser()
+    #TODO pflog() should use config vars like PFLogger()
+    pflog(p.BASE_DATA_PATH, p.PFLOG_FILENAME, p.BSD_CERT_PATH,
+        p.BSD_USERNAME, p.BSD_ADDRESS, p.BSD_PFLOG_PATH)
+    PFLogger('{0}/{1}'.format(p.BASE_DATA_PATH, p.PFLOG_FILENAME), 
+        '{0}/{1}'.format(p.BASE_DATA_PATH, p.GEOLITE_FILENAME)).parser()
 
 @manager.command
 def upd8geo():
     from app.getdata import geolite
-    geolite()
+    p = Production()
+    geolite(p.BASE_DATA_PATH, p.GEOLITE_FILENAME)
 
 @manager.command
 def initdb():

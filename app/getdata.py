@@ -28,10 +28,8 @@ if not path.isdir(Production().BASE_DATA_PATH):
     makedirs(Production().BASE_DATA_PATH)
 
 
-def geolite():
+def geolite(dp, gf):
     url = 'http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz'
-    dp = Production().BASE_DATA_PATH
-    gf = Production().GEOLITE_FILENAME
     filepath = '{0}/{1}.tgz'.format(dp, gf)
     urlretrieve(url, filepath)  # tarfile only works with files
     compacted = tarfile.open(filepath, mode='r:gz')
@@ -50,13 +48,11 @@ def geolite():
         rmtree(d)
     remove(filepath)
 
-def pflog():
+def pflog(dp, pf, c, u, a, r):
     p = Production()
     try:
-        remove('{0}/{1}'.format(p.BASE_DATA_PATH, p.PFLOG_FILENAME))
+        remove('{0}/{1}'.format(dp, pf))
     except FileNotFoundError:
         pass
-    system('scp -i {0} {1}@{2}:{3} {4}/{5}'.format(p.BSD_CERT_PATH, 
-        p.BSD_USERNAME, p.BSD_ADDRESS, p.BSD_PFLOG_PATH, 
-        p.BASE_DATA_PATH, p.PFLOG_FILENAME))
+    system('scp -i {0} {1}@{2}:{3} {4}/{5}'.format(c, u, a, r, dp, pf))
 

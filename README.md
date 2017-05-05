@@ -2,10 +2,8 @@
 
 Tesla aims to parse a OpenBSD access data (`pflog`) to a database, and create JSON from it.  Then that data can be used by another applications to get statistics and graphs of network usage.
 
-Warning: under development!
 
-
-## Infrastructure
+# Infrastructure
 
 Tesla was developed to work in this architecture:
 
@@ -34,8 +32,6 @@ $ source tesla/bin/activate
 $ pip3 install -r requirements.txt --upgrade
 ```
 
-> **Note:** I made a [pull-request to pyshark](https://github.com/KimiNewt/pyshark/pull/198/commits/370d850c6be6cf553677770f9281184b60c8976f) because it uses Exception instead of FileNotFoundError in its `file_capture.py`.  Until they fix it, you should apply it manually.
-
 From this moment, it'll be considered that all commands will be executed inside this virtual environment. 
 
 ### Database Setup
@@ -56,7 +52,7 @@ Change `DBPASS` in `app/config.py` according to the password previously defined.
 
 Edit `/var/lib/pgsql/data/pg_hba.conf` to use md5 from local IPv4 connections.  Remember to reload Postgre's service.
 
-Now, prepare the database:
+Now, initialize the database:
 
 ```
 $ sudo -u postgresql psql
@@ -85,7 +81,6 @@ $ python manage.py upd8geo
 $ python manage.py upd8db
 ```
 
-
 ### Testing
 
 You should now be able to run Tesla:
@@ -107,6 +102,8 @@ When Tesla is in production, it can be periodically executed by cron (for exampl
 
 As the main idea here is to parse a pflog file, and provide that information in a JSON format, there are no queries to retrieve relevant information from that data.  It should be done in another level, where an analytics tool will process the JSON and answer questions such as the most frequent country or the variation between days.
 
+Logging data are recorded by default in `app/data/tesla.log`.
+
 
 # Database
 
@@ -119,9 +116,9 @@ Tesla was not tested with IPv6.
 
 # About
 
-Tesla was written by José Lopes to be used at [Cemig](http://cemig.com.br). 
+Tesla was written by [José Lopes](https://twitter.com/forkd_) to be used at [Cemig](http://cemig.com.br). 
 
-The project that resulted in that OpenBSD machine was named Tesla, in honor of Nikola Tesla (1856-1943).  When I started up this repository, I decided to use that name.
+The project that resulted in that OpenBSD machine was named 'Tesla' in honor of Nikola Tesla (1856-1943).  When I started up this repository, I decided to use that name.
 
 
 # License

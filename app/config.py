@@ -32,6 +32,7 @@ class Production:
     BASE_DATA_PATH = 'app/data'
     PFLOG_FILENAME = 'pflog'
     GEOLITE_FILENAME = 'geolite.mmdb'
+    LOG_FILENAME = 'tesla.log'
 
     BSD_CERT_PATH = 'ssh-private-key-path'
     BSD_USERNAME = 'username'

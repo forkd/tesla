@@ -13,6 +13,8 @@
 __author__ = 'José Lopes de Oliveira Jr.'
 
 
+import logging
+
 from flask_script import Manager, Command
 
 from app import app
@@ -20,29 +22,49 @@ from app.config import Production
 
 
 manager = Manager(app)
+p = Production()  # configuration variables
+
+logging.basicConfig(
+    filename='{0}/{1}'.format(p.BASE_DATA_PATH, p.LOG_FILENAME),
+    filemode='a',
+    format='%(asctime)s %(name)s %(levelname)s %(message)s',
+    level=logging.DEBUG)
 
 
 @manager.command
 def upd8db():
     from app.pflog import PFLogger
     from app.getdata import pflog
-    p = Production()
-    #TODO should have an exception handling here
-    #TODO pflog() should use config vars like PFLogger()
-    pflog(p.BASE_DATA_PATH, p.PFLOG_FILENAME, p.BSD_CERT_PATH,
-        p.BSD_USERNAME, p.BSD_ADDRESS, p.BSD_PFLOG_PATH)
-    PFLogger('{0}/{1}'.format(p.BASE_DATA_PATH, p.PFLOG_FILENAME), 
-        '{0}/{1}'.format(p.BASE_DATA_PATH, p.GEOLITE_FILENAME)).parser()
+    logging.info('Downloading new pflog file')
+    try:
+        pflog(p.BASE_DATA_PATH, p.PFLOG_FILENAME, p.BSD_CERT_PATH,
+            p.BSD_USERNAME, p.BSD_ADDRESS, p.BSD_PFLOG_PATH)
+    except Exception as e:
+        logging.warning('Error downloading pflog: {}'.format(str(e)))
+        return
+
+    logging.info('Importing pflog to database')
+    try:
+        PFLogger('{0}/{1}'.format(p.BASE_DATA_PATH, p.PFLOG_FILENAME), 
+            '{0}/{1}'.format(p.BASE_DATA_PATH, p.GEOLITE_FILENAME)).parser()
+    except Exception as e:
+        logging.warning('Error parsing pflog: {}'.format(str(e)))
+        return
 
 @manager.command
 def upd8geo():
     from app.getdata import geolite
-    p = Production()
-    geolite(p.BASE_DATA_PATH, p.GEOLITE_FILENAME)
+    logging.info('Updating GeoLite database')
+    try:
+        geolite(p.BASE_DATA_PATH, p.GEOLITE_FILENAME)
+    except Exception as e:
+        logging.warning('Error retrieving GeoLite: {}'.format(str(e)))
+        return
 
 @manager.command
 def initdb():
     from app.models import db
+    logging.info('Creating database')
     db.create_all()
 
 

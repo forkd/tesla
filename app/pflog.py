@@ -34,10 +34,10 @@ class PFLogger:
 
     '''
 
-    def __init__(self, f, g, d=datetime.utcnow()):
+    def __init__(self, f, g, d=datetime.utcnow().strftime('%Y%m%d')):
         self.capture = pyshark.FileCapture(f)
         self.geo = geoip2.database.Reader(g)
-        self.date = d
+        self.date = datetime.strptime(d, '%Y%m%d')
 
     def parser(self):
         counter = 0

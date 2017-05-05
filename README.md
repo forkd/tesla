@@ -34,6 +34,8 @@ $ source tesla/bin/activate
 $ pip3 install -r requirements.txt --upgrade
 ```
 
+> **Note:** I made a [pull-request to pyshark](https://github.com/KimiNewt/pyshark/pull/198/commits/370d850c6be6cf553677770f9281184b60c8976f) because it uses Exception instead of FileNotFoundError in its `file_capture.py`.  Until they fix it, you should apply it manually.
+
 From this moment, it'll be considered that all commands will be executed inside this virtual environment. 
 
 ### Database Setup
@@ -76,7 +78,7 @@ $ ssh user@server
 $ scp -i generated_key_id_25519 /var/log/pf/pflog .  # test: must download this file without asking for password
 ```
 
-Default path for pflog and GeoLite files is `tesla/app/data`.  Setup `pflog()` in `getdata.py` with your server's data and download the base files --`geolite()` will require internet access and `upd8db()` will require access to your server to download pflog file, it also may take some minutes to import that file data to your database:
+With access to the OpenBSD machine (and internet access), everything's OK to get raw data, process that, and import into database.  Commands below should do it with no errors (note that the last one can take several minutes to finish).
 
 ```
 $ python manage.py upd8geo
@@ -92,14 +94,25 @@ You should now be able to run Tesla:
 $ python manage.py runserver
 ```
 
-If everything went right, open a web browser, and access `localhost:5000/packets`.  The data you just imported to database will be shown in JSON format.
+If everything went right, accessing `http://localhost:5000/capture/DATE` (where `DATE` is in format `AAAAMMDD`) or `latest` will get the most recent import in JSON format.
+
+```
+$ curl http://localhost:5000/capture/latest
+```
+
+
+# Production
+
+When Tesla is in production, it can be periodically executed by cron (for example), to import pflog files and parse them.  You can also periodically update GeoLite database, but remember it can turn geographical data inconsistent, since an IP address can change between GeoLite versions (theoretically).
+
+As the main idea here is to parse a pflog file, and provide that information in a JSON format, there are no queries to retrieve relevant information from that data.  It should be done in another level, where an analytics tool will process the JSON and answer questions such as the most frequent country or the variation between days.
 
 
 # Database
 
-The resulting database size depends on the number of data transmitted and received by OpenBSD machine, of course.  In a practical way, I noticed that a 145 MB pflog file resulted in ~ 795 K rows in the base.
+The resulting database size depends on the number of data transmitted and received by OpenBSD machine, of course.  Empirically, I noticed that a 145 MB pflog file added ~ 795 K rows in database.
 
-If a local IPv4 address was logged, then GeoLite won't be able to figure out its country, so it'll be recorded as None.  The same happens with IP addresses not tracked by GeoLite.
+If a local IPv4 address was logged, then GeoLite won't be able to figure out its country, so it'll be recorded as `None`.  The same happens with IP addresses not tracked by GeoLite.  Packets with no transport layer data, will also record as `None` those fields.
 
 Tesla was not tested with IPv6.
 

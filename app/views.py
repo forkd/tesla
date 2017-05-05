@@ -25,8 +25,7 @@ resp = Blueprint('resp', __name__, template_folder='templates')
 def index():
     return render_template('index.html')
 
-@resp.route('/packets/')
-@resp.route('/packets/<int:days>')
-def route_packets(days=1):
-    return get_packets(days)
+@resp.route('/capture/<string:date>')
+def route_packets(date):
+    return get_packets(date)
 

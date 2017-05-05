@@ -24,33 +24,33 @@ from app.models import db, Packet
 def error_response(status):
     '''Auxiliary function to return JSON errors.'''
     if status == 404:
-        return make_response(jsonify({'status': 'not found'}), status)
+        return make_response(jsonify({'status':'not found'}), status)
     else:
-        return make_response(jsonify({'status': 'server error ({})'.format(
+        return make_response(jsonify({'status':'server error ({})'.format(
             status)}), status)
 
-def packet_response(status, d, l, ips, ipsg, ipd, ipdg, tp, tsp, tdp):
-    '''Auxiliary function used by get_packets().'''
-    if status == 200:
-        return {'date':d, 'length':l, 'ip_src':ips, 'ip_src_geo':ipsg, 
-            'ip_dst':ipd, 'ip_dst_geo':ipdg, 'transport_proto':tp,
-            'transport_sport':tsp, 'transport_dport':tdp}
-    else:
-        return error_response(status)
-
-def get_packets(d):
+def get_packets(date_query=datetime.utcnow().strftime('%Y%m%d')):
     '''Main function to retrieve packets data.'''
-    end = db.session.query(db.func.max(Packet.date)).scalar()
-    begin = end - timedelta(days=d)
+    try:
+        d = datetime.strptime(date_query, '%Y%m%d')
+    except ValueError:
+        if date_query == 'latest':
+            d = datetime.utcnow().strftime('%Y%m%d')
+        else:
+            return error_response(404)
     packets = list()
-    
-    for p in Packet.query.filter(begin<=end):
-        packets.append(packet_response(200, p.date, p.length,
-            p.ip_src, p.ip_src_geo, p.ip_dst, p.ip_dst_geo,
-            p.transport_proto, p.transport_sport, p. transport_dport))
 
+    for p in Packet.query.filter_by(date=d):
+        packets.append({'date':p.date, 'length':p.length, 
+            'ip_src':p.ip_src, 'ip_src_geo':p.ip_src_geo, 
+            'ip_dst':p.ip_dst, 'ip_dst_geo':p.ip_dst_geo, 
+            'transport_proto':p.transport_proto,
+            'transport_sport':p.transport_sport, 
+            'transport_dport':p.transport_dport})
+    
     if len(packets):
-        return jsonify({'status':'OK', 'packets':packets})
+        return make_response(jsonify({'status':'OK', 'packets':packets}), 
+            200)
     else:
-        return packet_response(404)
+        return error_response(404)
 

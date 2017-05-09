@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 from flask import jsonify, make_response
 
 
-from app.models import db, Packet
+from app.models import db, Capture
 
 
 def error_response(status):
@@ -29,27 +29,19 @@ def error_response(status):
         return make_response(jsonify({'status':'server error ({})'.format(
             status)}), status)
 
-def get_packets(date_query=datetime.utcnow().strftime('%Y%m%d')):
+def get_capture():
     '''Main function to retrieve packets data.'''
-    try:
-        d = datetime.strptime(date_query, '%Y%m%d')
-    except ValueError:
-        if date_query == 'latest':
-            d = datetime.utcnow().strftime('%Y%m%d')
-        else:
-            return error_response(404)
-    packets = list()
-
-    for p in Packet.query.filter_by(date=d):
-        packets.append({'date':p.date, 'length':p.length, 
-            'ip_src':p.ip_src, 'ip_src_geo':p.ip_src_geo, 
-            'ip_dst':p.ip_dst, 'ip_dst_geo':p.ip_dst_geo, 
-            'transport_proto':p.transport_proto,
-            'transport_sport':p.transport_sport, 
-            'transport_dport':p.transport_dport})
+    capture = list()
+    for c in Capture.query.all():
+        capture.append({'date':c.date, 'length':c.length, 
+            'ip_src':c.ip_src, 'ip_src_geo':c.ip_src_geo, 
+            'ip_dst':c.ip_dst, 'ip_dst_geo':c.ip_dst_geo, 
+            'transport_proto':c.transport_proto,
+            'transport_sporc':c.transport_sport, 
+            'transport_dport':c.transport_dport})
     
-    if len(packets):
-        return make_response(jsonify({'status':'OK', 'packets':packets}), 
+    if len(capture):
+        return make_response(jsonify({'status':'OK', 'capture':capture}), 
             200)
     else:
         return error_response(404)

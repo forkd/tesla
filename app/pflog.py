@@ -19,7 +19,7 @@ import pyshark
 import geoip2.database
 from geoip2.errors import AddressNotFoundError
 
-from app.models import db, Packet
+from app.models import db, Capture
 
 
 class PFLogger:
@@ -34,31 +34,33 @@ class PFLogger:
 
     '''
 
-    def __init__(self, f, g, d=datetime.utcnow().strftime('%Y%m%d')):
+    def __init__(self, f, g):
         self.capture = pyshark.FileCapture(f)
         self.geo = geoip2.database.Reader(g)
-        self.date = datetime.strptime(d, '%Y%m%d')
+        Capture.query.delete()  # we want no previous records
 
     def parser(self):
         counter = 0
         for c in self.capture:
             try:
-                p = [c.captured_length, c['ip'].src, 
+                cs = [datetime.utcfromtimestamp(float(c.sniff_timestamp)), 
+                    c.captured_length, 
+                    c['ip'].src, 
                     self.geo.country(c['ip'].src).country.iso_code,
                     c['ip'].dst,
                     self.geo.country(c['ip'].dst).country.iso_code]
             except AddressNotFoundError:
-                p = [c.captured_length, c['ip'].src, None,
+                cs = [c.captured_length, c['ip'].src, None,
                     c['ip'].dst, None]
 
             try:
                 t = c.transport_layer.lower()
-                p += [t, c[t].srcport, c[t].dstport]
+                cs += [t, c[t].srcport, c[t].dstport]
             except AttributeError:
-                p += [None, None, None]
+                cs += [None, None, None]
             
-            db.session.add(Packet(self.date, p[0], p[1], p[2], p[3], 
-                p[4], p[5], p[6], p[7]))
+            db.session.add(Capture(cs[0], cs[1], cs[2], cs[3], 
+                cs[4], cs[5], cs[6], cs[7], cs[8]))
 
             # Less commits, better performance.
             # In fact, it's not quite right, so

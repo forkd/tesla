@@ -18,10 +18,10 @@ from datetime import datetime
 from app.database import db
 
 
-class Packet(db.Model):
-    __tablename__ = 'Packets'
+class Capture(db.Model):
+    __tablename__ = 'Captures'
     id = db.Column(db.BigInteger, primary_key=True)
-    date = db.Column(db.DateTime, default=datetime.utcnow())
+    date = db.Column(db.DateTime)
     length = db.Column(db.Integer)
     ip_src = db.Column(db.String(128))
     ip_src_geo = db.Column(db.String(2))

@@ -14,6 +14,7 @@ __author__ = 'José Lopes de Oliveira Jr.'
 
 
 import logging
+from os import path, makedirs
 
 from flask_script import Manager, Command
 
@@ -24,6 +25,10 @@ from app.config import Production
 manager = Manager(app)
 p = Production()  # configuration variables
 
+
+if not path.isdir(p.BASE_DATA_PATH):
+    makedirs(p.BASE_DATA_PATH)
+
 logging.basicConfig(
     filename='{0}/{1}'.format(p.BASE_DATA_PATH, p.LOG_FILENAME),
     filemode='a',
@@ -33,8 +38,10 @@ logging.basicConfig(
 
 @manager.command
 def upd8db():
-    from app.pflog import PFLogger
+    from app.capture import PFLogger
     from app.getdata import pflog
+    from app.analytics import summary
+
     logging.info('Downloading new pflog file')
     try:
         pflog(p.BASE_DATA_PATH, p.PFLOG_FILENAME, p.BSD_CERT_PATH,
@@ -49,6 +56,12 @@ def upd8db():
             '{0}/{1}'.format(p.BASE_DATA_PATH, p.GEOLITE_FILENAME)).parser()
     except Exception as e:
         logging.warning('Error parsing pflog: {}'.format(str(e)))
+        return
+
+    try:
+        summary()
+    except Exception as e:
+        logging.warning('Error creating analytics: {}'.format(str(e)))
         return
 
 @manager.command

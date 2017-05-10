@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 from flask import jsonify, make_response
 
 
-from app.models import db, Capture
+from app.models import db, Capture, Summary
 
 
 def error_response(status):
@@ -30,7 +30,7 @@ def error_response(status):
             status)}), status)
 
 def get_capture():
-    '''Main function to retrieve packets data.'''
+    '''Retrieves all packets in capture.'''
     capture = list()
     for c in Capture.query.all():
         capture.append({'date':c.date, 'length':c.length, 
@@ -39,10 +39,16 @@ def get_capture():
             'transport_proto':c.transport_proto,
             'transport_sporc':c.transport_sport, 
             'transport_dport':c.transport_dport})
-    
     if len(capture):
         return make_response(jsonify({'status':'OK', 'capture':capture}), 
             200)
     else:
         return error_response(404)
+
+def get_summary(date):
+    #TODO retrieve only the date defined in date
+    s = Summary.query.all()
+    return make_response(jsonify({'status:':'OK',
+        'summaries':{'date':s.date, 'count':s.count, 'size':s.size, 
+        'tcp':s.tcp, 'udp':s.udp}}))
 

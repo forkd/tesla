@@ -30,6 +30,7 @@ $ cd tesla
 $ virtualenv tesla
 $ source tesla/bin/activate
 $ pip3 install -r requirements.txt --upgrade
+# dnf install wireshark  # needs pyshark needs tshark utility
 ```
 
 From this moment, it'll be considered that all commands will be executed inside this virtual environment. 

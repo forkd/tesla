@@ -16,16 +16,12 @@ __author__ = 'José Lopes de Oliveira Jr.'
 import sys
 import re
 import tarfile
-from os import remove, system, path, makedirs
+from os import remove, system, path
 from urllib.request import urlretrieve
 from glob import glob
 from shutil import move, rmtree
 
 from app.config import Production
-
-
-if not path.isdir(Production().BASE_DATA_PATH):
-    makedirs(Production().BASE_DATA_PATH)
 
 
 def geolite(dp, gf):

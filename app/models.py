@@ -45,3 +45,22 @@ class Capture(db.Model):
     def __repr__(self):
         return '<Packet lenght: {}>'.format(self.length)
 
+
+class Summary(db.Model):
+    __tablename__ = 'Summaries'
+    date = db.Column(db.DateTime, primary_key=True)
+    count = db.Column(db.Integer)
+    size = db.Column(db.Integer)  # in bytes
+    tcp = db.Column(db.Integer)
+    udp = db.Column(db.Integer)
+
+    def __init__(self, d, c, s, t, u):
+        self.date = d
+        self.count = c
+        self.size = s
+        self.tcp = t
+        self.udp = u
+
+    def __repr__(self):
+        return '<Summary date: {}>'.format(self.date)
+

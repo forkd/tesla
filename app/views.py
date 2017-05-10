@@ -15,7 +15,7 @@ __author__ = 'José Lopes de Oliveira Jr.'
 
 from flask import Blueprint, render_template
 
-from app.queries import get_capture
+from app.queries import get_capture, get_summary
 
 
 resp = Blueprint('resp', __name__, template_folder='templates')
@@ -28,4 +28,9 @@ def index():
 @resp.route('/capture')
 def route_capture():
     return get_capture()
+
+@resp.route('/summary')
+@resp.route('/summary/<string:date>')
+def route_summary(date):
+    return  get_summary(date)
 

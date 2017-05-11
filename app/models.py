@@ -30,8 +30,9 @@ class Capture(db.Model):
     transport_proto = db.Column(db.String(10))
     transport_sport = db.Column(db.Integer)
     transport_dport = db.Column(db.Integer)
+    tcp_flags = db.Column(db.Integer)
 
-    def __init__(self, d, l, ips, ipsg, ipd, ipdg, tp, tsp, tdp):
+    def __init__(self, d, l, ips, ipsg, ipd, ipdg, tp, tsp, tdp, tf):
         self.date = d
         self.length = l
         self.ip_src = ips
@@ -41,6 +42,7 @@ class Capture(db.Model):
         self.transport_proto = tp
         self.transport_sport = tsp
         self.transport_dport = tdp
+        self.tcp_flags = tf
 
     def __repr__(self):
         return '<Packet lenght: {}>'.format(self.length)

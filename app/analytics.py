@@ -19,6 +19,7 @@ from app.models import db, Capture, Summary
 
 
 def summary():
+    Summary.query.delete()  # FOR TESTING - DELETE IT!
     date = db.session.query(db.func.min(Capture.date)).scalar()
     count = Capture.query.count()
     size = db.session.query(db.func.sum(Capture.length)).scalar()

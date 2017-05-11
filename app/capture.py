@@ -57,10 +57,17 @@ class PFLogger:
                 t = c.transport_layer.lower()
                 cs += [t, c[t].srcport, c[t].dstport]
             except AttributeError:
-                cs += [None, None, None]
-            
+                cs += [None, None, None, None]
+
+            try:
+                cs += [int(c[t].flags, 16)]
+            except AttributeError:  # some packet doesn't have transport layer
+                cs += [None]
+            except KeyError:  # udp datagrams doesn't have flags
+                cs += [None]
+
             db.session.add(Capture(cs[0], cs[1], cs[2], cs[3], 
-                cs[4], cs[5], cs[6], cs[7], cs[8]))
+                cs[4], cs[5], cs[6], cs[7], cs[8], cs[9]))
 
             # Less commits, better performance.
             # In fact, it's not quite right, so

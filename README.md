@@ -30,7 +30,7 @@ $ cd tesla
 $ virtualenv tesla
 $ source tesla/bin/activate
 $ pip3 install -r requirements.txt --upgrade
-# dnf install wireshark  # needs pyshark needs tshark utility
+# dnf install wireshark  # for tshark utility
 ```
 
 From this moment, it'll be considered that all commands will be executed inside this virtual environment. 
@@ -105,6 +105,12 @@ As the main idea here is to parse a pflog file, and provide that information in 
 
 Logging data are recorded by default in `app/data/tesla.log`.
 
+You must set the IP address to `0.0.0.0` in production environments.  As this project uses flask_scripts, this can be done using parameters to `runserver`:
+
+```
+$ python manage.py runserver -h 0.0.0.0 -p 80
+```
+
 
 # Database
 
@@ -117,6 +123,7 @@ Tesla was not tested with IPv6.
 ## Tables
 
 * **Captures**: this table is wiped every time `upd8db` is executed, then it receives new data from pflog file.
+* **Summaries**: stores the daily summaries of logged packets.
 
 
 # About

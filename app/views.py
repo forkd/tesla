@@ -31,6 +31,6 @@ def route_capture():
 
 @resp.route('/summary')
 @resp.route('/summary/<string:date>')
-def route_summary(date):
+def route_summary(date='latest'):
     return  get_summary(date)
 

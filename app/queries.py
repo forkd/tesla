@@ -46,9 +46,16 @@ def get_capture():
         return error_response(404)
 
 def get_summary(date):
-    #TODO retrieve only the date defined in date
-    s = Summary.query.all()
-    return make_response(jsonify({'status:':'OK',
-        'summaries':{'date':s.date, 'count':s.count, 'size':s.size, 
-        'tcp':s.tcp, 'udp':s.udp}}))
+    '''Retrieves the summary of date (format == AAAAMMYY).'''
+    try:
+        d = datetime.strptime(date, '%Y%m%d')
+    except ValueError:
+        d = db.session.query(db.func.max(Summary.date)).scalar()
+    s = Summary.query.filter_by(date=d).scalar()
+    if s:
+        return make_response(jsonify({'status:':'OK',
+            'summaries':[{'date':s.date, 'count':s.count, 'size':s.size, 
+            'tcp':s.tcp, 'udp':s.udp}]}))
+    else:
+        return error_response(404)
 

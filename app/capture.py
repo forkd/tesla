@@ -37,21 +37,20 @@ class PFLogger:
     def __init__(self, f, g):
         self.capture = pyshark.FileCapture(f)
         self.geo = geoip2.database.Reader(g)
-        Capture.query.delete()  # we want no previous records
 
     def parser(self):
         counter = 0
         for c in self.capture:
+            cs = [datetime.utcfromtimestamp(float(c.sniff_timestamp)),
+                c.captured_length]
+
             try:
-                cs = [datetime.utcfromtimestamp(float(c.sniff_timestamp)), 
-                    c.captured_length, 
-                    c['ip'].src, 
+                cs += [c['ip'].src,  
                     self.geo.country(c['ip'].src).country.iso_code,
                     c['ip'].dst,
                     self.geo.country(c['ip'].dst).country.iso_code]
             except AddressNotFoundError:
-                cs = [c.captured_length, c['ip'].src, None,
-                    c['ip'].dst, None]
+                cs += [c['ip'].src, None, c['ip'].dst, None]
 
             try:
                 t = c.transport_layer.lower()
@@ -59,6 +58,7 @@ class PFLogger:
             except AttributeError:
                 cs += [None, None, None, None]
 
+            #TODO shouldn't this work in a single try/except?
             try:
                 cs += [int(c[t].flags, 16)]
             except AttributeError:  # some packet doesn't have transport layer

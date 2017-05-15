@@ -20,8 +20,7 @@ from app.database import db
 
 class Capture(db.Model):
     __tablename__ = 'Captures'
-    id = db.Column(db.BigInteger, primary_key=True)
-    date = db.Column(db.DateTime)
+    date = db.Column(db.DateTime, primary_key=True)
     length = db.Column(db.Integer)
     ip_src = db.Column(db.String(128))
     ip_src_geo = db.Column(db.String(2))

@@ -42,7 +42,6 @@ logging.basicConfig(
 def upd8db():
     from app.capture import PFLogger
     from app.getdata import pflog
-    from app.analytics import summary
 
     logging.info('Downloading new pflog file')
     try:

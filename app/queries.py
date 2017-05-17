@@ -17,8 +17,7 @@ from datetime import datetime, timedelta
 
 from flask import jsonify, make_response
 
-
-from app.models import db, Capture, Summary
+from app.models import db, Capture
 
 
 def error_response(status):
@@ -29,16 +28,26 @@ def error_response(status):
         return make_response(jsonify({'status':'server error ({})'.format(
             status)}), status)
 
-def get_capture():
+def get_capture(date):
     '''Retrieves all packets in capture.'''
+    try:
+        d = datetime.strptime(date, '%Y%m%d')
+        d = d.replace(hour=23, minute=59, second=59, microsecond=99999)
+    except ValueError:
+        d = db.session.query(db.func.max(Capture.date)).scalar()
+    min_d = d.replace(hour=0, minute=0, second=0, microsecond=0)
+
     capture = list()
-    for c in Capture.query.all():
+    for c in db.session.query(Capture).filter(min_d <= Capture.date,
+        Capture.date <= d):
         capture.append({'date':c.date, 'length':c.length, 
             'ip_src':c.ip_src, 'ip_src_geo':c.ip_src_geo, 
             'ip_dst':c.ip_dst, 'ip_dst_geo':c.ip_dst_geo, 
-            'transport_proto':c.transport_proto,
-            'transport_sporc':c.transport_sport, 
-            'transport_dport':c.transport_dport})
+            'ip_version':c.ip_version, 'ip_ttl':c.ip_ttl,
+            'icmp_type':c.icmp_type, 'icmp_code':c.icmp_code,
+            'tcp_sport':c.tcp_sport, 'tcp_dport':c.tcp_dport, 
+            'tcp_flags':c.tcp_flags,
+            'udp_sport':c.udp_sport, 'udp_dport':c.udp_dport})
     if len(capture):
         return make_response(jsonify({'status':'OK', 'capture':capture}), 
             200)
@@ -49,13 +58,26 @@ def get_summary(date):
     '''Retrieves the summary of date (format == AAAAMMYY).'''
     try:
         d = datetime.strptime(date, '%Y%m%d')
+        d = d.replace(hour=23, minute=59, second=59, microsecond=99999)
+        min_d = d.replace(hour=0, minute=0, second=0, microsecond=0)
     except ValueError:
-        d = db.session.query(db.func.max(Summary.date)).scalar()
-    s = Summary.query.filter_by(date=d).scalar()
-    if s:
-        return make_response(jsonify({'status:':'OK',
-            'summaries':[{'date':s.date, 'count':s.count, 'size':s.size, 
-            'tcp':s.tcp, 'udp':s.udp}]}))
-    else:
         return error_response(404)
+
+    count = db.session.query(db.func.count(Capture.date)).\
+        filter(Capture.date >= min_d, Capture.date <= d).scalar()
+    size = db.session.query(db.func.sum(Capture.length)).\
+        filter(Capture.date >= min_d, Capture.date <= d).scalar()
+    tcp = db.session.query(db.func.count(Capture.date)).\
+        filter(Capture.tcp_sport != None).\
+        filter(Capture.date >= min_d, Capture.date <= d).scalar()
+    udp = db.session.query(db.func.count(Capture.date)).\
+        filter(Capture.udp_sport != None).\
+        filter(Capture.date >= min_d, Capture.date <= d).scalar()
+    icmp = db.session.query(db.func.count(Capture.date)).\
+        filter(Capture.icmp_type != None).\
+        filter(Capture.date >= min_d, Capture.date <= d).scalar()
+
+    return make_response(jsonify({'status:':'OK',
+        'summaries':[{'date':d, 'count':count, 'size':size, 
+        'tcp':tcp, 'udp':udp, 'icmp':icmp}]}))
 

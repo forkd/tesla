@@ -15,8 +15,10 @@ __author__ = 'José Lopes de Oliveira Jr.'
 
 import logging
 from os import path, makedirs
+from datetime import datetime, timedelta
 
 from flask_script import Manager, Command
+from sqlalchemy.exc import IntegrityError
 
 from app import app
 from app.config import Production
@@ -56,12 +58,6 @@ def upd8db():
             '{0}/{1}'.format(p.BASE_DATA_PATH, p.GEOLITE_FILENAME)).parser()
     except Exception as e:
         logging.warning('Error parsing pflog: {}'.format(str(e)))
-        return
-
-    try:
-        summary()
-    except Exception as e:
-        logging.warning('Error creating analytics: {}'.format(str(e)))
         return
 
 @manager.command

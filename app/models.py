@@ -26,42 +26,34 @@ class Capture(db.Model):
     ip_src_geo = db.Column(db.String(2))
     ip_dst = db.Column(db.String(128))
     ip_dst_geo = db.Column(db.String(2))
-    transport_proto = db.Column(db.String(10))
-    transport_sport = db.Column(db.Integer)
-    transport_dport = db.Column(db.Integer)
+    ip_version = db.Column(db.Integer)
+    ip_ttl = db.Column(db.Integer)
+    icmp_type = db.Column(db.Integer)
+    icmp_code = db.Column(db.Integer)
+    tcp_sport = db.Column(db.Integer)
+    tcp_dport = db.Column(db.Integer)
     tcp_flags = db.Column(db.Integer)
+    udp_sport = db.Column(db.Integer)
+    udp_dport = db.Column(db.Integer)
 
-    def __init__(self, d, l, ips, ipsg, ipd, ipdg, tp, tsp, tdp, tf):
+    def __init__(self, d, l, ips, ipsg, ipd, ipdg, ipver, ipttl, itp, ico,
+        tsp, tdp, tf, usp, udp):
         self.date = d
         self.length = l
         self.ip_src = ips
         self.ip_src_geo = ipsg
         self.ip_dst = ipd
         self.ip_dst_geo = ipdg
-        self.transport_proto = tp
-        self.transport_sport = tsp
-        self.transport_dport = tdp
+        self.ip_version = ipver
+        self.ip_ttl = ipttl
+        self.icmp_type = itp
+        self.icmp_code = ico
+        self.tcp_sport = tsp
+        self.tcp_dport = tdp
         self.tcp_flags = tf
+        self.udp_sport = usp
+        self.udp_dport = udp
 
     def __repr__(self):
         return '<Packet lenght: {}>'.format(self.length)
-
-
-class Summary(db.Model):
-    __tablename__ = 'Summaries'
-    date = db.Column(db.DateTime, primary_key=True)
-    count = db.Column(db.Integer)
-    size = db.Column(db.Integer)  # in bytes
-    tcp = db.Column(db.Integer)
-    udp = db.Column(db.Integer)
-
-    def __init__(self, d, c, s, t, u):
-        self.date = d
-        self.count = c
-        self.size = s
-        self.tcp = t
-        self.udp = u
-
-    def __repr__(self):
-        return '<Summary date: {}>'.format(self.date)
 

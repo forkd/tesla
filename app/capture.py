@@ -27,53 +27,65 @@ class PFLogger:
     Opens and parses pflog files adding geographical information.
 
     Args:
-        f (string): pflog file name --default: app/data/pflog
+        p (string): pflog file name --default: app/data/pflog
         g (string): GeoLite database path --default: app/data/geolite.mmdb
 
     Writes all data into a database defined in app.models.db.
 
     '''
 
-    def __init__(self, f, g):
-        self.capture = pyshark.FileCapture(f)
+    def __init__(self, p, g):
+        self.capture = pyshark.FileCapture(p)
         self.geo = geoip2.database.Reader(g)
 
     def parser(self):
         counter = 0
         for c in self.capture:
-            cs = [datetime.utcfromtimestamp(float(c.sniff_timestamp)),
-                c.captured_length]
-
+            # ip layer
             try:
-                cs += [c['ip'].src,  
+                ip_layer = [c['ip'].src,
                     self.geo.country(c['ip'].src).country.iso_code,
                     c['ip'].dst,
-                    self.geo.country(c['ip'].dst).country.iso_code]
+                    self.geo.country(c['ip'].dst).country.iso_code,
+                    c['ip'].version, c['ip'].ttl]
             except AddressNotFoundError:
-                cs += [c['ip'].src, None, c['ip'].dst, None]
+            #TODO check which addr has no geolocation and record the other
+                ip_layer = [c['ip'].src, None, c['ip'].dst, None,
+                    c['ip'].version, c['ip'].ttl]
+            except KeyError:
+                ip_layer = [None, None, None, None, None, None]
 
+            # icmp layer
             try:
-                t = c.transport_layer.lower()
-                cs += [t, c[t].srcport, c[t].dstport]
-            except AttributeError:
-                cs += [None, None, None, None]
+                icmp_layer = [c['icmp'].type, c['icmp'].code]
+            except KeyError:
+                icmp_layer = [None, None]
 
-            #TODO shouldn't this work in a single try/except?
+            # tcp layer
             try:
-                cs += [int(c[t].flags, 16)]
-            except AttributeError:  # some packet doesn't have transport layer
-                cs += [None]
-            except KeyError:  # udp datagrams doesn't have flags
-                cs += [None]
+                tcp_layer = [c['tcp'].srcport, c['tcp'].dstport,
+                    int(c['tcp'].flags,16)]
+                udp_layer = [None, None]
+            except KeyError:
+                tcp_layer = [None, None, None]
+                try:
+                    udp_layer = [c['udp'].srcport, c['udp'].dstport]
+                except KeyError:
+                    udp_layer = [None, None]
 
-            db.session.add(Capture(cs[0], cs[1], cs[2], cs[3], 
-                cs[4], cs[5], cs[6], cs[7], cs[8], cs[9]))
-
+            db.session.add(Capture(datetime.utcfromtimestamp(float(
+                c.sniff_timestamp)), 
+                c.captured_length,
+                ip_layer[0], ip_layer[1], ip_layer[2], ip_layer[3],
+                ip_layer[4], ip_layer[5],
+                icmp_layer[0], icmp_layer[1],
+                tcp_layer[0], tcp_layer[1], tcp_layer[2],
+                udp_layer[0], udp_layer[1]))
+                
             # Less commits, better performance.
-            # In fact, it's not quite right, so
-            # with 20000 disk usage was diminished 
-            # and CPU improved, but there were no 
-            # expressive gains above this value.
+            # In fact, it's not quite right, because using 20000 
+            # disk usage was diminished and CPU improved, but 
+            # there were no expressive gains above this value.
             counter += 1
             if counter == 20000:
                 db.session.commit()

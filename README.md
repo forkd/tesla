@@ -114,16 +114,11 @@ $ python manage.py runserver -h 0.0.0.0 -p 80
 
 # Database
 
-The resulting database (`tesla`) size depends on the number of data transmitted and received by OpenBSD machine, of course.  Empirically, I noticed that a 145 MB pflog file added ~ 795 K rows in database.
+The resulting database (`tesla`) size depends on the number of data transmitted and received by OpenBSD machine, of course.  Empirically, I noticed that a 145 MB pflog file added ~ 795 K rows in the database.
 
 If a local IPv4 address was logged, then GeoLite won't be able to figure out its country, so it'll be recorded as `None`.  The same happens with IP addresses not tracked by GeoLite.  Packets with no transport layer data, will also record as `None` those fields.
 
 Tesla was not tested with IPv6.
-
-## Tables
-
-* **Captures**: this table is wiped every time `upd8db` is executed, then it receives new data from pflog file.
-* **Summaries**: stores the daily summaries of logged packets.
 
 
 # About

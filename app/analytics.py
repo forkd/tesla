@@ -8,25 +8,7 @@
 ##
 
 
-'''Calculates summary from pflog data.'''
+'''Calculates summary from pflog data. UNUSED FOR NOW!'''
 
 __author__ = 'José Lopes de Oliveira Jr.'
-
-
-from datetime import datetime
-
-from app.models import db, Capture, Summary
-
-
-def summary():
-    Summary.query.delete()  # FOR TESTING - DELETE IT!
-    date = db.session.query(db.func.min(Capture.date)).scalar()
-    count = Capture.query.count()
-    size = db.session.query(db.func.sum(Capture.length)).scalar()
-    tcp = db.session.query(db.func.count(Capture.length)).filter_by(transport_proto='tcp').scalar()
-    udp = db.session.query(db.func.count(Capture.length)).filter_by(transport_proto='udp').scalar()
-
-    db.session.add(Summary(datetime(date.year, date.month, date.day), 
-        count, size, tcp, udp))
-    db.session.commit()
 

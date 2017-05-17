@@ -26,11 +26,11 @@ def index():
     return render_template('index.html')
 
 @resp.route('/capture')
-def route_capture():
-    return get_capture()
+@resp.route('/capture/<string:date>')
+def route_capture(date='latest'):
+    return get_capture(date)
 
-@resp.route('/summary')
 @resp.route('/summary/<string:date>')
-def route_summary(date='latest'):
+def route_summary(date):
     return  get_summary(date)
 

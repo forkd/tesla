@@ -59,13 +59,17 @@ def get_summary(date):
     try:
         d = datetime.strptime(date, '%Y%m%d')
         d = d.replace(hour=23, minute=59, second=59, microsecond=99999)
-        min_d = d.replace(hour=0, minute=0, second=0, microsecond=0)
     except ValueError:
+        d = db.session.query(db.func.max(Capture.date)).scalar()
+    min_d = d.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    size = db.session.query(db.func.sum(Capture.length)).\
+        filter(Capture.date >= min_d, Capture.date <= d).scalar()
+
+    if size is None:
         return error_response(404)
 
     count = db.session.query(db.func.count(Capture.date)).\
-        filter(Capture.date >= min_d, Capture.date <= d).scalar()
-    size = db.session.query(db.func.sum(Capture.length)).\
         filter(Capture.date >= min_d, Capture.date <= d).scalar()
     tcp = db.session.query(db.func.count(Capture.date)).\
         filter(Capture.tcp_sport != None).\
@@ -79,5 +83,37 @@ def get_summary(date):
 
     return make_response(jsonify({'status:':'OK',
         'summaries':[{'date':d, 'count':count, 'size':size, 
-        'tcp':tcp, 'udp':udp, 'icmp':icmp}]}))
+        'tcp':tcp, 'udp':udp, 'icmp':icmp}]}), 200)
+
+def get_topccsrc(date):
+    '''Retrieves the top countries in date (format == AAAAMMYY).'''
+    try:
+        d = datetime.strptime(date, '%Y%m%d')
+        d = d.replace(hour=23, minute=59, second=59, microsecond=99999)
+    except ValueError:
+        d = db.session.query(db.func.max(Capture.date)).scalar()
+    min_d = d.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # put here the ip addrs you don't want to include in the results
+    exclude_ips = []
+
+    cc = dict(db.session.query(Capture.ip_src_geo, 
+        db.func.count(Capture.ip_src_geo).label('count')).\
+        filter(Capture.date >= min_d, Capture.date <= d).\
+        filter(Capture.ip_src.notin_(exclude_ips)).\
+        group_by(Capture.ip_src_geo).all())
+    
+    if not cc:
+        return error_response(404)
+
+    cc['date'] = d
+    try:  # jsonify breaks with None items in dict
+        if cc[None]:
+            cc['None'] = cc.pop(None)
+        else:
+            cc.pop(None)
+    except KeyError:
+        pass
+
+    return make_response(jsonify({'status':'OK', 'topcc':[cc]}), 200)
 

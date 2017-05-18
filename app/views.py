@@ -15,7 +15,7 @@ __author__ = 'José Lopes de Oliveira Jr.'
 
 from flask import Blueprint, render_template
 
-from app.queries import get_capture, get_summary
+from app.queries import get_capture, get_summary, get_topccsrc
 
 
 resp = Blueprint('resp', __name__, template_folder='templates')
@@ -30,7 +30,13 @@ def index():
 def route_capture(date='latest'):
     return get_capture(date)
 
+@resp.route('/summary')
 @resp.route('/summary/<string:date>')
-def route_summary(date):
+def route_summary(date='latest'):
     return  get_summary(date)
+
+@resp.route('/topccsrc')
+@resp.route('/topccsrc/<string:date>')
+def route_topccsrc(date='latest'):
+    return get_topccsrc(date)
 

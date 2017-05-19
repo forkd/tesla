@@ -37,7 +37,7 @@ class Production:
     BSD_CERT_PATH = 'ssh-private-key-path'
     BSD_USERNAME = 'username'
     BSD_ADDRESS = 'ip-addr-or-hostname'
-    BSD_PFLOG_PATH = 'remote/pflog/path'
+    BSD_PFLOG_PATH = '/var/log/pf/pflog.0'
 
 class Development(Production):
     DEBUG = True

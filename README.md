@@ -35,45 +35,69 @@ where:
     * (I): internet accessible host
 ```
 
+## PostgreSQL Host
+
+To create the Postgres container, simply build the image with the Dockerfile provided and run a container --before, edit that file to configure DB user and password:
+
+```
+$ cd tesla/app/data/Docker
+$ docker build -f Dockerfile.postgres -t img-tesla-pg .
+$ docker run --name tesla-pg img-tesla-pg
+```
+
+When prompt stops showing messages, type control-c to return to Bash.  Now start the image and take note of its IP address --it'll be needed on Tesla's configuration step:
+
+```
+$ docker start tesla-pg
+$ docker exec -it tesla-pg ip addr show |grep 172.17
+```
+
+At this point PostgreSQL should be up and running, accessible by the username and password defined in `Dockerfile.postgres` and with the IP addr you just saw.  Also, remember that this container will be accessed by Tesla's container via port 5432 by default.
+
+## OpenBSD Host
+
+This host must be accessible by Tesla machine via SSH.  It is extremely important that this connection be made without user intervention.  The preferred way is to setup an OpenSSH server here, generate a SSH key pair, and register the public key in `/home/TESLA-USER/.ssh/authorized_keys`, where `TESLA-USER` must be changed according to your setup.
+
+The common steps to achieve this are (inside Tesla's host --next session):
+
+```
+$ ssh-keygen -t ed25519 -C 'my@email.com'  # use no password
+$ scp generated_key_id_25519.pub TESLA-USER@openbsd-addr:path
+$ ssh TESLA-USER@openbsd-addr
+> cat generated_key_id_25519 >> /home/TESLA-USER/.ssh/authorized_keys
+> rm generated_key_id_25519 && exit
+```
+
+In this project, we assume the pflog files are stored in `/var/log/pf/pflog.0`.  This `pflog.0` is a symlink to the real file, which is rotated every day at 0 AM GMT+0.
+
 ## Tesla Host
 
-Guarantee that this machine has access to OpenBSD machine via SSH and to GeoLite servers as well (this URI can be seen at `app/getdata.py`).  Grant access to PostgreSQL machine too, via postgres port (commonly 5432).  Since Tesla machine will be the central hub, it has to be accessible by the client which will retrieve data and process it.
+This is the main machine, that will host Tesla's code.  To build up this container, use the proper Dockerfile and the `requirements.txt`:
 
->>> Installation steps enter here, like cloning the repo, installing system dependencies etc.
+```
+$ cd tesla/app/data/docker
+$ cp ../../../requirements.txt .
+$ docker build -f Dockerfile.python -t img-tesla-py .
+$ docker run -it --name tesla-py img-tesla-py bash
+```
 
-Inside Tesla's directory, setup `app/config.py` with your environment's data, specially:
+After the last command you'll be on container's shell.  Use vi to edit Tesla's configuration file according to Postgres setup and with the private key to access OpenBSD machine via SSH.  Also, you may want to add some IP addresses in `exclude_ips` list in `tesla/app/queries.py` (`topccsrc()`) that'll be ignored by that SQL query.
+
+### `tesla/app/config.py`
 
 * `DBUSER`
 * `DBPASS`
 * `SECRET_KEY`
 * `BSD_*`
 
-Pay special attention to `BSD_CERT_PATH`, which should have its permissions set to 0600, because this is the private key used to access automatically OpenBSD machine (read OpenBSD Host section to learn more about it).
+### `tesla/app/getdata.py`
 
-## OpenBSD Host
+* `topccsrc()` > `exclude_ips`
 
-This host must be accessible by Tesla machine via SSH.  It is extremely important that this connection be made without user intervention.  The preferred way is to setup an OpenSSH server here, generate a SSH key pair, and register the public key in `/home/TESLA-USER/.ssh/authorized_keys`, where `TESLA-USER` must be changed according to your reality.
+This container must have access to GeoLite URI (`tesla/app/getdata.py`) via port 80, to OpenBSD usually via port 22, and must be accessible by client's machine through port 80, 5000 or whatever port you like.
 
-The common steps to achieve this are:
+Pay special attention to `BSD_CERT_PATH`, which should have its permissions set to 0600, because this is the private key used to access automatically OpenBSD machine (read OpenBSD Host section to learn more about it).  You may want to run the sequence of commands described in OpenBSD section here to generate and register the access keys.
 
-```
-$ ssh-keygen -t ed25519 -C 'my@email.com'  # use no password
-$ scp generated_key_id_25519.pub user@server:path
-$ ssh user@server
-> cat generated_key_id_25519 >> /home/TESLA-USER/.ssh/authorized_keys
-> rm generated_key_id_25519 && exit
-```
-
-In this project, we assume the pflog files are stored in `/var/log/pf/pflog`.  This `pflog` is a symlink to the real file, which is rotated every day at 0 AM GMT+0.
-
-## PostgreSQL Host
-
-Having PostgreSQL up and running, just ensure that it is accessible by Tesla host via that port configured in `app/config.py` --and credentials too.  After that, create the database to store the packets data, usually with `psql` command:
-
-```sql
-> create database tesla;
-> \q
-```
 
 # Running
 
@@ -130,23 +154,23 @@ This is the JSON format for capture.  Note that `"capture"` is a list, so it can
 {
   "capture": [
     {
-      "date": "Wed, 17 May 2017 00:00:00 GMT", 
-      "icmp_code": null, 
-      "icmp_type": null, 
-      "ip_dst": "XXX.XXX.XXX.XXX", 
-      "ip_dst_geo": "BR", 
-      "ip_src": "XXX.XXX.XXX.XXX", 
-      "ip_src_geo": "CN", 
-      "ip_ttl": 49, 
-      "ip_version": 4, 
-      "length": 140, 
-      "tcp_dport": 22, 
-      "tcp_flags": 4, 
-      "tcp_sport": 10310, 
-      "udp_dport": null, 
+      "date": "Wed, 17 May 2017 00:00:00 GMT",
+      "icmp_code": null,
+      "icmp_type": null,
+      "ip_dst": "XXX.XXX.XXX.XXX",
+      "ip_dst_geo": "BR",
+      "ip_src": "XXX.XXX.XXX.XXX",
+      "ip_src_geo": "CN",
+      "ip_ttl": 49,
+      "ip_version": 4,
+      "length": 140,
+      "tcp_dport": 22,
+      "tcp_flags": 4,
+      "tcp_sport": 10310,
+      "udp_dport": null,
       "udp_sport": null
     }
-  ], 
+  ],
   "status": "OK"
 }
 ```
@@ -157,14 +181,14 @@ The main structure of summary is described below.  It is important to consider t
 
 ```json
 {
-  "status:": "OK", 
+  "status:": "OK",
   "summaries": [
     {
-      "count": 496079, 
-      "date": "Wed, 10 May 2017 23:59:59 GMT", 
-      "icmp": 1537, 
-      "size": 84956760, 
-      "tcp": 483798, 
+      "count": 496079,
+      "date": "Wed, 10 May 2017 23:59:59 GMT",
+      "icmp": 1537,
+      "size": 84956760,
+      "tcp": 483798,
       "udp": 10744
     }
   ]
@@ -177,22 +201,22 @@ This metric sums all access and group them by country code, so the fields in the
 
 ```json
 {
-  "status": "OK", 
+  "status": "OK",
   "topcc": [
     {
-      "BR": 3631, 
-      "CN": 51817, 
-      "DE": 103184, 
-      "FR": 4520, 
-      "GB": 8069, 
-      "MX": 4116, 
-      "NL": 4849, 
-      "PS": 3050, 
-      "RU": 3035, 
-      "SE": 3204, 
-      "TR": 3160, 
-      "UA": 3124, 
-      "US": 12941, 
+      "BR": 3631,
+      "CN": 51817,
+      "DE": 103184,
+      "FR": 4520,
+      "GB": 8069,
+      "MX": 4116,
+      "NL": 4849,
+      "PS": 3050,
+      "RU": 3035,
+      "SE": 3204,
+      "TR": 3160,
+      "UA": 3124,
+      "US": 12941,
       "date": "Wed, 10 May 2017 23:59:59 GMT"
     }
   ]
@@ -226,57 +250,9 @@ Tesla was written by [José Lopes](https://twitter.com/forkd_) to be used at [Ce
 
 The project that resulted in that OpenBSD machine was named 'Tesla' in honor of Nikola Tesla (1856-1943).  When I started up this repository, I decided to use that name.
 
+Thanks to [Vimerson Pereira](https://github.com/viperblack) for the Docker tips.
+
 
 # License
 
 This project is licensed under a MIT license; read `LICENSE` file for more information.
-
-
-#########################################################################
-
-## Environment Preparation
-
-All the steps described here were based on Fedora 25.  If you aren't running this system, things could be a bit different.  Start with:
-
-```
-$ git clone https://github.com/forkd/tesla
-$ cd tesla
-$ virtualenv tesla
-$ source tesla/bin/activate
-$ pip3 install -r requirements.txt --upgrade
-# dnf install wireshark  # for tshark utility
-```
-
-From this moment, it'll be considered that all commands will be executed inside this virtual environment. 
-
-### Database Setup
-
-Then go to PostgreSQL installation and configuration:
-
-```
-# dnf install postgresql-server postgresql-contrib
-# systemctl enable postgresql
-# postgresql-setup --initdb --unit postgresql
-# systemctl start postgresql
-$ sudo -u postgres psql
-> \password
-> \q
-```
-
-Edit `/var/lib/pgsql/data/pg_hba.conf` to use md5 from local IPv4 connections.  Remember to reload Postgre's service.
-
-
-# Production
-
-When Tesla is in production, it can be periodically executed by cron (for example), to import pflog files and parse them.  You can also periodically update GeoLite database, but remember it can turn geographical data inconsistent, since an IP address can change between GeoLite versions (theoretically).
-
-As the main idea here is to parse a pflog file, and provide that information in a JSON format, there are no queries to retrieve relevant information from that data.  It should be done in another level, where an analytics tool will process the JSON and answer questions such as the most frequent country or the variation between days.
-
-Logging data are recorded by default in `app/data/tesla.log`.
-
-You must set the IP address to `0.0.0.0` in production environments.  As this project uses flask_scripts, this can be done using parameters to `runserver`:
-
-```
-$ python manage.py runserver -h 0.0.0.0 -p 80
-```
-

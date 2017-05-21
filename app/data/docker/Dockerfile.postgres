@@ -1,0 +1,5 @@
+FROM postgres
+RUN apt update && apt upgrade -y
+ENV POSTGRES_USER postgres
+ENV POSTGRES_PASSWORD foobar
+ENV POSTGRES_DB tesla

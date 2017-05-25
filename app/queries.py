@@ -40,16 +40,16 @@ def get_capture(date):
     capture = list()
     for c in db.session.query(Capture).filter(min_d <= Capture.date,
         Capture.date <= d):
-        capture.append({'date':c.date, 'length':c.length, 
-            'ip_src':c.ip_src, 'ip_src_geo':c.ip_src_geo, 
-            'ip_dst':c.ip_dst, 'ip_dst_geo':c.ip_dst_geo, 
+        capture.append({'date':c.date, 'length':c.length,
+            'ip_src':c.ip_src, 'ip_src_geo':c.ip_src_geo,
+            'ip_dst':c.ip_dst, 'ip_dst_geo':c.ip_dst_geo,
             'ip_version':c.ip_version, 'ip_ttl':c.ip_ttl,
             'icmp_type':c.icmp_type, 'icmp_code':c.icmp_code,
-            'tcp_sport':c.tcp_sport, 'tcp_dport':c.tcp_dport, 
+            'tcp_sport':c.tcp_sport, 'tcp_dport':c.tcp_dport,
             'tcp_flags':c.tcp_flags,
             'udp_sport':c.udp_sport, 'udp_dport':c.udp_dport})
     if len(capture):
-        return make_response(jsonify({'status':'OK', 'capture':capture}), 
+        return make_response(jsonify({'status':'OK', 'capture':capture}),
             200)
     else:
         return error_response(404)
@@ -82,10 +82,10 @@ def get_summary(date):
         filter(Capture.date >= min_d, Capture.date <= d).scalar()
 
     return make_response(jsonify({'status:':'OK',
-        'summaries':[{'date':d, 'count':count, 'size':size, 
+        'summary':[{'date':d, 'count':count, 'size':size,
         'tcp':tcp, 'udp':udp, 'icmp':icmp}]}), 200)
 
-def get_topccsrc(date):
+def get_topcc(date):
     '''Retrieves the top countries in date (format == AAAAMMYY).'''
     try:
         d = datetime.strptime(date, '%Y%m%d')
@@ -93,16 +93,16 @@ def get_topccsrc(date):
     except ValueError:
         d = db.session.query(db.func.max(Capture.date)).scalar()
     min_d = d.replace(hour=0, minute=0, second=0, microsecond=0)
-    
+
     # put here the ip addrs you don't want to include in the results
     exclude_ips = []
 
-    cc = dict(db.session.query(Capture.ip_src_geo, 
+    cc = dict(db.session.query(Capture.ip_src_geo,
         db.func.count(Capture.ip_src_geo).label('count')).\
         filter(Capture.date >= min_d, Capture.date <= d).\
         filter(Capture.ip_src.notin_(exclude_ips)).\
         group_by(Capture.ip_src_geo).all())
-    
+
     if not cc:
         return error_response(404)
 
@@ -116,4 +116,3 @@ def get_topccsrc(date):
         pass
 
     return make_response(jsonify({'status':'OK', 'topcc':[cc]}), 200)
-

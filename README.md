@@ -81,7 +81,7 @@ $ docker build -f Dockerfile.python -t img-tesla-py .
 $ docker run -it --name tesla-py img-tesla-py bash
 ```
 
-After the last command you'll be on container's shell.  Use vi to edit Tesla's configuration file according to Postgres setup and with the private key to access OpenBSD machine via SSH.  Also, you may want to add some IP addresses in `exclude_ips` list in `tesla/app/queries.py` (`topccsrc()`) that'll be ignored by that SQL query.
+After the last command you'll be on container's shell.  Use vi to edit Tesla's configuration file according to Postgres setup and with the private key to access OpenBSD machine via SSH.  Also, you may want to add some IP addresses in `exclude_ips` list in `tesla/app/queries.py` (`topcc()`) that'll be ignored by that SQL query.
 
 ### `tesla/app/config.py`
 
@@ -92,7 +92,7 @@ After the last command you'll be on container's shell.  Use vi to edit Tesla's c
 
 ### `tesla/app/getdata.py`
 
-* `topccsrc()` > `exclude_ips`
+* `topcc()` > `exclude_ips`
 
 This container must have access to GeoLite URI (`tesla/app/getdata.py`) via port 80, to OpenBSD usually via port 22, and must be accessible by client's machine through port 80, 5000 or whatever port you like.
 
@@ -143,8 +143,8 @@ The JSON interface is available by HTTP.  The URIs Tesla provide are described b
 * `/capture/AAAAMMYY`: returns the capture in date YYYYMMDD.
 * `/summary`: queries and returns the latest summary --1 day period.
 * `/summary/AAAAMMYY`: queries and returns the summary in date YYYYMMDD.
-* `/topccsrc`: queries and returns the top country codes inbound --1 day period.
-* `/topccsrc/YYYYMMDD`: queries and returns the top country codes inbound --1 day period.
+* `/topcc`: queries and returns the top country codes inbound --1 day period.
+* `/topcc/YYYYMMDD`: queries and returns the top country codes inbound --1 day period.
 
 ## capture
 
@@ -182,7 +182,7 @@ The main structure of summary is described below.  It is important to consider t
 ```json
 {
   "status:": "OK",
-  "summaries": [
+  "summary": [
     {
       "count": 496079,
       "date": "Wed, 10 May 2017 23:59:59 GMT",
@@ -195,7 +195,7 @@ The main structure of summary is described below.  It is important to consider t
 }
 ```
 
-## topccsrc
+## topcc
 
 This metric sums all access and group them by country code, so the fields in the result are variable.
 
